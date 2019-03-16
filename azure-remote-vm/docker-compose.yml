@@ -1,0 +1,32 @@
+version: "2.2"
+
+volumes:
+  pnkconfig:
+    driver: local
+  dnxconfig:
+    driver: local
+
+services:
+  azure-vm-control:
+    image: azure-vm-control
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - AZURE_CONFIG_DIR=/etc/azure-vm-control/.azure
+    volumes:
+      - pnkconfig:/etc/azure-vm-control
+
+
+  dnx-azure-control:
+    image: azure-vm-control
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - AZURE_CONFIG_DIR=/etc/azure-vm-control/.azure
+    volumes:
+      - dnxconfig:/etc/azure-vm-control
+
+
+
