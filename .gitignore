@@ -1,0 +1,9 @@
+# ignore all files ending in ~
+*~
+
+# ignore vim swp files
+*.swp
+
+# ignore emacs temp files:
+\#*#
+.#*
