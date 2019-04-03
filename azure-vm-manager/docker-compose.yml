@@ -1,0 +1,16 @@
+version: "2.2"
+
+volumes:
+  config:
+    driver: local
+
+services:
+  azure-vm-manager:
+    image: azure-vm-manager
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - CONFIG_DIR=/etc/azure-vm-manager
+    volumes:
+      - config:/etc/azure-vm-manager
