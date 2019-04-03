@@ -17,6 +17,50 @@ function fatal()
     exit 1
 }
 
+function track_ip()
+{
+    local rule_name="$1"
+    local rg="$2"
+
+    if [ -z "$rule_name" ]; then
+        fatal "Missing rule name.  --track-ip <rule-name> <resource-group> [nsg-name]"
+    fi
+
+    if [ -z "$rg" ]; then
+        fatal "Missing resource group name.  --track-ip <rule-name> <resource-group>"
+    fi
+
+    # get nsg
+    if [ -z "$3" ]; then
+        nsg="$(az network nsg list --resource-group $rg --output json | jq -r '.[0].name')"
+    else
+        nsg="$3"
+    fi
+        rule=$(az network nsg rule show --resource-group $rg --nsg-name "$nsg" --name "$rule_name" --output json)  || fatal "Invalid network security group"
+
+    local jsonfile="$AZURE_CONFIG_DIR/.trackedip/$rg/$rule_name"
+    mkdir -p $(dirname "$jsonfile")
+    cat > "$jsonfile" <<<"$rule"
+    cat "$jsonfile"
+}
+
+function update_tracked_ips()
+{
+    readonly local current_ip="$(curl --silent --fail checkip.amazonaws.com)"
+    readonly local source_address_prefix="$current_ip/32"
+
+    local files=$(find "$AZURE_CONFIG_DIR/.trackedip" -type f)
+    local changed=0
+    for file in $files;do
+        local id=$(jq -r < $file .id)
+        if [ "$source_address_prefix" != "$(jq -r < $file .sourceAddressPrefix)" ];then
+            az network nsg rule update --ids "$id" --source-address-prefixes "$source_address_prefix" --output json > $file || fatal
+            changed=$((changed+1))
+        fi
+    done
+    echo "$changed rules of $(echo $files | wc -w) rules required updating"
+}
+
 function group_vm_operation()
 {
     rg="$1"
@@ -31,7 +75,7 @@ function group_vm_operation()
         nowait=""
     fi
 
-    vms=$(az vm list -g $rg  -o json | jq -r '.[].name')
+    vms=$(az vm list --resource-group $rg  -o json | jq -r '.[].name')
     for vm in $vms;do
         az vm $operation --resource-group $rg --name $vm $nowait
     done
@@ -62,6 +106,14 @@ function account_command()
             done
             ;;
 
+        --track-ip)
+            track_ip $@
+            ;;
+
+        --update-tracked-ips)
+            update_tracked_ips
+            ;;
+
         *)
             fatal "Unknown command: $token"
             ;;
@@ -76,7 +128,7 @@ fi
 
 token="$1"
 if [ -z "$token" ]; then
-    fatal "Noo peration specified"
+    fatal "No operation specified"
 fi
 shift 1
 
