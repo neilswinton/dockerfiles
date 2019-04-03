@@ -147,6 +147,9 @@ case "$operation" in
     stop)
         az vm deallocate $@
         ;;
+    -)
+        az $@
+        ;;
     *)
         fatal "Unknown operation: $*"
 esac
