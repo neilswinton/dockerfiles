@@ -44,5 +44,5 @@ steps:
   displayName: Push image
   inputs:
     command: push
-    imageName: $(repoName)/$(Build.Repository.Name)/azure-vm-manager:$(Build.BuildId)
+    imageName: $(Build.Repository.Name)/azure-vm-manager:$(Build.BuildId)
     
