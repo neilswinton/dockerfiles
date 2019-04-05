@@ -14,12 +14,12 @@ variables:
   repoName: neilswinton
 
 steps:
-- task: Docker@1
-  displayName: Login
-  inputs:
-    command: login
-    containerregistrytype: Container Registry
-    dockerRegistryEndpoint: "Dockerhub(neilswinton)"
+# - task: Docker@1
+#   displayName: Login
+#   inputs:
+#     command: login
+#     containerregistrytype: Container Registry
+#     dockerRegistryEndpoint: "Dockerhub(neilswinton)"
 - task: Docker@1
   displayName: Build image
   inputs:
