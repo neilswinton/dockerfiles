@@ -25,11 +25,5 @@ steps:
     command: build
     dockerFile: azure-vm-manager/Dockerfile
     imageName: $(Build.Repository.Name)/azure-vm-manager
-- task: Docker@1
-  displayName: Tag image
-  inputs:
-    command: tag
-    imageName: $(repoName)/$(Build.Repository.Name):latest
-    arguments: $(repoName)/$(Build.Repository.Name):$(Build.BuildId)
-- script: docker image ls
+- script: docker image ls && echo $(Build.Repository.Name) && echo $(repoName)
   displayName: 'docker image ls'
