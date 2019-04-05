@@ -1,0 +1,48 @@
+# Docker image
+# Build a Docker image to deploy, run, or push to a container registry.
+# Add steps that use Docker Compose, tag images, push to a registry, run an image, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- azure-pipelines
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+variables:
+  vmManagerImage: 'azure-vm-manager:$(build.buildId)'
+  repoName: neilswinton
+
+steps:
+- task: Docker@1
+  displayName: Login
+  inputs:
+    command: login
+    containerregistrytype: Container Registry
+    dockerRegistryEndpoint: "Dockerhub(neilswinton)"
+- task: Docker@1
+  displayName: Build image
+  inputs:
+    command: build
+    dockerFile: azure-vm-manager/Dockerfile
+    imageName: $(Build.Repository.Name)/azure-vm-manager
+- script: docker image ls && echo $(Build.Repository.Name) && echo $(repoName)
+  displayName: 'docker image ls'
+- task: Docker@1
+  displayName: Tag image
+  inputs:
+    command: tag
+    imageName: $(Build.Repository.Name)/azure-vm-manager
+    arguments: $(Build.Repository.Name)/azure-vm-manager:$(Build.BuildId)
+- task: Docker@1
+  displayName: Tag image 2
+  inputs:
+    command: tag
+    imageName: $(Build.Repository.Name)/azure-vm-manager
+    arguments: $(repoName)/$(Build.Repository.Name)/azure-vm-manager:$(Build.BuildId)
+- task: Docker@1
+  displayName: Push image
+  inputs:
+    command: push
+    imageName: $(Build.Repository.Name)/azure-vm-manager:$(Build.BuildId)
+    
