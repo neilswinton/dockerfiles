@@ -145,6 +145,18 @@ case "$token" in
         mkdir "$CONFIG_DIR/$1"
         ;;
 
+    --account-foreach)
+        for AZURE_CONFIG_DIR in "$CONFIG_DIR"/*;do
+            export AZURE_CONFIG_DIR
+            if [[ $1 =~ ^-- ]] ;
+            then
+                account_command $@
+            else
+                $@
+            fi
+            echo ""
+        done
+        ;;
     --account-list)
         ls -1 "$CONFIG_DIR"
         ;;
@@ -166,7 +178,7 @@ case "$token" in
         then
             account_command $@
         else
-            exec $@
+            exec $token $@
         fi
         ;;
 esac
